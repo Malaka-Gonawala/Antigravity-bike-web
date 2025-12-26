@@ -1,0 +1,293 @@
+Honda
+Cross
+CRF 450RWE 2026
+Cilindrata: 450 cc
+Potenza: 52.6 HP (39.2 kW)
+Prezzo: €12.599 (MSRP)
+
+CRF 450R SMT 2026
+Cilindrata: 450 cc
+Potenza: 52.6 HP (39.2 kW)
+Prezzo: €9.699 (MSRP, modello base simile)
+
+CRF 450RX Rally 2026
+Cilindrata: 450 cc
+Potenza: 52.6 HP (39.2 kW)
+Prezzo: €9.999 (MSRP)
+
+Sportive
+CBR1000RR-R Fireblade SP Carbon Edition
+Cilindrata: 1.000 cc
+Potenza: 218 HP (162 kW)
+Prezzo: €30.000+ (edizione limitata)
+
+CBR650R
+Cilindrata: 649 cc
+Potenza: 94 HP (70 kW)
+Prezzo: €11.160
+
+CBR600RR
+Cilindrata: 599 cc
+Potenza: 119 HP (89 kW)
+Prezzo: €15.000+
+
+Naked
+CB1000 Hornet
+Cilindrata: 1.000 cc
+Potenza: 150 HP (111.6 kW)
+Prezzo: €9.099
+
+CB750 Hornet
+Cilindrata: 755 cc
+Potenza: 91 HP (67.5 kW)
+Prezzo: €8.000+
+
+CB1000R BLACK EDITION
+Cilindrata: 998 cc
+Potenza: 109 HP (81.61 kW)
+Prezzo: €15.000+
+
+Kawasaki
+Cross
+KX450
+Cilindrata: 449 cc
+Potenza: 56 HP (41 kW)
+Prezzo: €9.500+
+
+KX250
+Cilindrata: 249 cc
+Potenza: 42 HP (31.3 kW)
+Prezzo: €8.000+
+
+KX450X
+Cilindrata: 449 cc
+Potenza: 56 HP (41 kW)
+Prezzo: €10.699
+
+Sportive
+Ninja H2R
+Cilindrata: 998 cc
+Potenza: 310 HP (230 kW)
+Prezzo: €50.000+ (track-only)
+
+Ninja ZX-10RR
+Cilindrata: 998 cc
+Potenza: 200+ HP (148 kW)
+Prezzo: €25.000+
+
+Ninja 650
+Cilindrata: 649 cc
+Potenza: 67 HP (50 kW)
+Prezzo: €8.299
+
+Naked
+Z H2 SE
+Cilindrata: 998 cc
+Potenza: 197 HP (147 kW)
+Prezzo: €21.300
+
+Z900
+Cilindrata: 948 cc
+Potenza: 123 HP (92 kW)
+Prezzo: €9.990
+
+Z1100
+Cilindrata: 1.099 cc
+Potenza: 134 HP (99 kW)
+Prezzo: €14.999
+
+KTM
+Cross
+2026 KTM 300 SX
+Cilindrata: 293 cc (2T)
+Potenza: 49.1 HP (36.6 kW)
+Prezzo: €9.000+
+
+2026 KTM 450 SX-F FACTORY EDITION
+Cilindrata: 450 cc
+Potenza: 60+ HP (44 kW)
+Prezzo: €12.000+
+
+2026 KTM 450 SMR
+Cilindrata: 450 cc
+Potenza: 63 HP (46.7 kW)
+Prezzo: €12.499
+
+Sportive
+2026 KTM 990 RC R
+Cilindrata: 947 cc
+Potenza: 128 HP (94 kW)
+Prezzo: €13.949
+
+2024 KTM RC 390
+Cilindrata: 373 cc
+Potenza: 43 HP (32 kW)
+Prezzo: €5.899
+
+2024 KTM RC 125
+Cilindrata: 124 cc
+Potenza: 15 HP (11 kW)
+Prezzo: €5.000+
+
+Naked
+2026 BRABUS 1400 R SIGNATURE EDITION
+Cilindrata: 1.350 cc
+Potenza: 190 HP (140 kW)
+Prezzo: €50.000+ (limitata)
+
+2026 KTM 1390 Super Duke R EVO
+Cilindrata: 1.350 cc
+Potenza: 190 HP (140 kW)
+Prezzo: €21.790+
+
+2025 KTM 125 Duke
+Cilindrata: 124 cc
+Potenza: 15 HP (11 kW)
+Prezzo: €1.750
+
+Yamaha
+Cross
+YZ450F 70th Anniversary Edition
+Cilindrata: 450 cc
+Potenza: 60+ HP (44 kW)
+Prezzo: €10.499
+
+YZ250F Monster Energy Yamaha Racing Edition
+Cilindrata: 250 cc
+Potenza: 40+ HP (30 kW)
+Prezzo: €9.099
+
+YZ125
+Cilindrata: 125 cc (2T)
+Potenza: 35 HP (26 kW)
+Prezzo: €7.199
+
+Sportive
+XSR900 GP
+Cilindrata: 890 cc
+Potenza: 119 HP (88 kW)
+Prezzo: €12.000+
+
+R1 RACE
+Cilindrata: 998 cc
+Potenza: 200 HP (147 kW)
+Prezzo: €25.000+ (track-only)
+
+R6 GYTR
+Cilindrata: 599 cc
+Potenza: 118 HP (87 kW)
+Prezzo: €20.000+ (track-only)
+
+Naked
+MT-10
+Cilindrata: 998 cc
+Potenza: 166 HP (122 kW)
+Prezzo: €15.000+
+
+MT-09 SP
+Cilindrata: 890 cc
+Potenza: 119 HP (88 kW)
+Prezzo: €13.900
+
+MT-125
+Cilindrata: 125 cc
+Potenza: 15 HP (11 kW)
+Prezzo: €5.251
+
+Ducati
+Cross
+Desmo450 MX
+Cilindrata: 449 cc
+Potenza: 63.5 HP (46.7 kW)
+Prezzo: €15.000+
+
+Hypermotard 698 Mono RVE
+Cilindrata: 659 cc
+Potenza: 77.5 HP (57 kW)
+Prezzo: €14.495
+
+Desmo250 MX
+Cilindrata: 250 cc
+Potenza: 40+ HP (30 kW)
+Prezzo: €10.000+ (prototipo)
+
+Sportive
+Panigale V2
+Cilindrata: 890 cc
+Potenza: 120 HP (88 kW)
+Prezzo: €19.120
+
+Ducati Unica
+Cilindrata: Personalizzabile (V4 1.103 cc tipica)
+Potenza: 215+ HP (158 kW)
+Prezzo: €50.000+ (custom)
+
+Panigale V4 Lamborghini
+Cilindrata: 1.103 cc
+Potenza: 218.5 HP (161 kW)
+Prezzo: €78.400 (limitata)
+
+Naked
+Streetfighter V2 S
+Cilindrata: 890 cc
+Potenza: 120 HP (88 kW)
+Prezzo: €18.995
+
+Diavel for Bentley
+Cilindrata: 1.158 cc
+Potenza: 168 HP (124 kW)
+Prezzo: €70.000 (limitata)
+
+Ducati Streetfighter V4 Supreme
+Cilindrata: 1.103 cc
+Potenza: 208 HP (153 kW)
+Prezzo: €50.000 (limitata)
+
+Suzuki
+Cross
+RM-Z450
+Cilindrata: 449 cc
+Potenza: 56 HP (41 kW)
+Prezzo: €9.399
+
+DR-Z4S
+Cilindrata: 398 cc
+Potenza: 37 HP (28 kW)
+Prezzo: €7.500+
+
+DR-Z4SM
+Cilindrata: 398 cc
+Potenza: 37 HP (28 kW)
+Prezzo: €7.500+
+
+Sportive
+HAYABUSA
+Cilindrata: 1.340 cc
+Potenza: 190 HP (140 kW)
+Prezzo: €18.060
+
+GSX-R1000R
+Cilindrata: 999 cc
+Potenza: 200+ HP (148 kW)
+Prezzo: €18.649
+
+GSX-8R EVO
+Cilindrata: 776 cc
+Potenza: 81.8 HP (60.7 kW)
+Prezzo: €9.439
+
+Naked
+GSX-S1000 EVO
+Cilindrata: 999 cc
+Potenza: 150 HP (112 kW)
+Prezzo: €14.000+
+
+KATANA
+Cilindrata: 999 cc
+Potenza: 150 HP (110 kW)
+Prezzo: €13.499
+
+SV650
+Cilindrata: 645 cc
+Potenza: 75 HP (55 kW)
+Prezzo: €7.500+
