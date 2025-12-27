@@ -19,7 +19,7 @@ import JobApplication from "./pages/JobApplication";
 function App() {
     return (
         <AuthProvider>
-            <Router basename={import.meta.env.BASE_URL}>
+            <Router basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
                 <div
                     style={{
                         minHeight: "100vh",
