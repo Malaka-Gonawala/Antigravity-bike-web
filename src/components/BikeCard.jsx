@@ -1,20 +1,26 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "./Button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
-import { Heart } from "lucide-react";
+import { useNotification } from "../context/NotificationContext";
+import { useCompare } from "../context/CompareContext";
 
 const BikeCard = ({ bike }) => {
     const { currentUser, updateUser } = useAuth();
+    const { showToast } = useNotification();
+    const { addToCompare, removeFromCompare, isInCompare } = useCompare();
+    const navigate = useNavigate();
 
     const isWatchlisted = currentUser?.watchlist?.includes(bike.id);
+    const isInComparison = isInCompare(bike.id);
 
     const toggleWatchlist = (e) => {
         e.preventDefault(); // Prevent Link navigation
         if (!currentUser) {
-            alert("Please login to add to watchlist");
+            showToast("Please login to add to watchlist", "info");
+            navigate("/login");
             return;
         }
 
@@ -29,6 +35,18 @@ const BikeCard = ({ bike }) => {
         updateUser({ watchlist: newWatchlist });
     };
 
+    const toggleCompare = (e) => {
+        e.preventDefault();
+        if (isInComparison) {
+            removeFromCompare(bike.id);
+        } else {
+            const result = addToCompare(bike);
+            if (!result.success) {
+                showToast(result.message, "error");
+            }
+        }
+    };
+
     return (
         <div
             className="bike-card"
@@ -40,7 +58,7 @@ const BikeCard = ({ bike }) => {
                 display: "flex",
                 flexDirection: "column",
                 height: "100%",
-                position: "relative", // For absolute positioning of heart
+                position: "relative",
             }}
         >
             {/* Watchlist Button */}
@@ -76,13 +94,50 @@ const BikeCard = ({ bike }) => {
                 />
             </button>
 
+            {/* Compare Button */}
+            <button
+                onClick={toggleCompare}
+                style={{
+                    position: "absolute",
+                    top: "12px",
+                    right: "12px",
+                    zIndex: 10,
+                    backgroundColor: isInComparison
+                        ? "var(--color-accent)"
+                        : "rgba(0,0,0,0.5)",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "6px 10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    color: "#fff",
+                }}
+            >
+                <input
+                    type="checkbox"
+                    checked={isInComparison}
+                    readOnly
+                    style={{
+                        cursor: "pointer",
+                        margin: 0,
+                        accentColor: "var(--color-accent)",
+                    }}
+                />
+                Compare
+            </button>
+
             {/* Image Area */}
             <div
                 style={{
                     position: "relative",
                     height: "240px",
                     overflow: "hidden",
-                    backgroundColor: "#ffffff", // White background to blend with JPEGs
+                    backgroundColor: "#ffffff",
                 }}
             >
                 <img
@@ -96,13 +151,13 @@ const BikeCard = ({ bike }) => {
                         width: "100%",
                         height: "100%",
                         objectFit: "contain",
-                        padding: "10px", // Add some padding so it doesn't touch the edges
+                        padding: "10px",
                     }}
                 />
                 <div
                     style={{
                         position: "absolute",
-                        top: "12px",
+                        top: "52px", // Adjusted to not overlap with Compare button
                         right: "12px",
                         backgroundColor: "rgba(0,0,0,0.7)",
                         padding: "4px 8px",

@@ -158,6 +158,25 @@ const Footer = () => {
                             </li>
                             <li>
                                 <Link
+                                    to="/contact"
+                                    className="footer-link"
+                                    style={{
+                                        color:
+                                            location.pathname === "/contact"
+                                                ? "var(--color-accent)"
+                                                : "var(--color-text-secondary)",
+                                        transition: "all 0.2s",
+                                        fontWeight:
+                                            location.pathname === "/contact"
+                                                ? "600"
+                                                : "400",
+                                    }}
+                                >
+                                    Contact
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
                                     to="/privacy"
                                     className="footer-link"
                                     style={{

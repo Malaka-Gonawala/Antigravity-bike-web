@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 import Button from "../components/Button";
 import "../styles/globals.css";
 
@@ -8,6 +9,7 @@ const JobApplication = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { currentUser, updateUser } = useAuth();
+    const { showToast } = useNotification();
 
     const jobTitle = location.state?.jobTitle || "General Application";
 
@@ -51,8 +53,9 @@ const JobApplication = () => {
         const currentApplications = currentUser.applications || [];
         updateUser({ applications: [...currentApplications, newApplication] });
 
-        alert(
-            `Application for ${jobTitle} submitted successfully! Our talent acquisition team will review your profile.`
+        showToast(
+            `Application for ${jobTitle} submitted successfully!`,
+            "success"
         );
         navigate("/profile");
     };

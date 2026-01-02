@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 import { useNavigate, Link } from "react-router-dom";
 import Button from "../components/Button";
 import "../styles/globals.css";
@@ -9,15 +10,17 @@ const Register = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { register } = useAuth();
+    const { showToast } = useNotification();
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = register(name, email, password);
+        const result = await register(name, email, password);
         if (result.success) {
+            showToast("Account created successfully! Please login.", "success");
             navigate("/login");
         } else {
-            alert(result.message);
+            showToast(result.message, "error");
         }
     };
 

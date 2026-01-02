@@ -15,49 +15,102 @@ import Careers from "./pages/Careers";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import JobApplication from "./pages/JobApplication";
+import Contact from "./pages/Contact";
+import Compare from "./pages/Compare";
+
+import { ThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { CompareProvider } from "./context/CompareContext";
+import Toast from "./components/Toast";
+import ComparePanel from "./components/ComparePanel";
 
 function App() {
     return (
-        <AuthProvider>
-            <Router basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-                <div
-                    style={{
-                        minHeight: "100vh",
-                        display: "flex",
-                        flexDirection: "column",
-                    }}
-                >
-                    <Navbar />
-                    <main style={{ flex: 1 }}>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/catalog" element={<Catalog />} />
-                            <Route path="/bike/:id" element={<ModelFocus />} />
-                            <Route
-                                path="/book-test-drive"
-                                element={<BookTestDrive />}
-                            />
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/register" element={<Register />} />
-                            <Route path="/profile" element={<Profile />} />
-                            <Route path="/about" element={<About />} />
-                            <Route path="/careers" element={<Careers />} />
-                            <Route
-                                path="/privacy"
-                                element={<PrivacyPolicy />}
-                            />
-                            <Route path="/terms" element={<TermsOfService />} />
-                            <Route
-                                path="/apply-job"
-                                element={<JobApplication />}
-                            />
-                        </Routes>
-                    </main>
-                    <Footer />
-                    <ScrollToTop />
-                </div>
-            </Router>
-        </AuthProvider>
+        <ThemeProvider>
+            <NotificationProvider>
+                <CompareProvider>
+                    <AuthProvider>
+                        <Router
+                            basename={import.meta.env.BASE_URL.replace(
+                                /\/$/,
+                                ""
+                            )}
+                        >
+                            <div
+                                style={{
+                                    minHeight: "100vh",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                }}
+                            >
+                                <Navbar />
+                                <main style={{ flex: 1 }}>
+                                    <Routes>
+                                        <Route path="/" element={<Home />} />
+                                        <Route
+                                            path="/catalog"
+                                            element={<Catalog />}
+                                        />
+                                        <Route
+                                            path="/bike/:id"
+                                            element={<ModelFocus />}
+                                        />
+                                        <Route
+                                            path="/book-test-drive"
+                                            element={<BookTestDrive />}
+                                        />
+                                        <Route
+                                            path="/login"
+                                            element={<Login />}
+                                        />
+                                        <Route
+                                            path="/register"
+                                            element={<Register />}
+                                        />
+                                        <Route
+                                            path="/profile"
+                                            element={<Profile />}
+                                        />
+                                        <Route
+                                            path="/about"
+                                            element={<About />}
+                                        />
+                                        <Route
+                                            path="/careers"
+                                            element={<Careers />}
+                                        />
+                                        <Route
+                                            path="/privacy"
+                                            element={<PrivacyPolicy />}
+                                        />
+                                        <Route
+                                            path="/terms"
+                                            element={<TermsOfService />}
+                                        />
+                                        <Route
+                                            path="/apply-job"
+                                            element={<JobApplication />}
+                                        />
+                                        <Route
+                                            path="/contact"
+                                            element={<Contact />}
+                                        />
+                                        <Route
+                                            path="/compare"
+                                            element={<Compare />}
+                                        />
+                                    </Routes>
+                                </main>
+                                <Footer />
+                                <ScrollToTop />
+                                <Toast />
+                                <ComparePanel />
+                            </div>
+                        </Router>
+                    </AuthProvider>
+                </CompareProvider>
+            </NotificationProvider>
+        </ThemeProvider>
     );
 }
 

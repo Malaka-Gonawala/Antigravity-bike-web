@@ -17,34 +17,72 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = (email, password) => {
-        // Mock login logic
+    // Utility: Title Case
+    const toTitleCase = (str) => {
+        if (!str) return "";
+        return str
+            .toLowerCase()
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+    };
+
+    // Utility: SHA-256 Hashing
+    const hashPassword = async (password) => {
+        const msgBuffer = new TextEncoder().encode(password);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("");
+        return hashHex;
+    };
+
+    const login = async (email, password) => {
         const users = JSON.parse(localStorage.getItem("users") || "[]");
+        const hashedPassword = await hashPassword(password);
+
         const user = users.find(
-            (u) => u.email === email && u.password === password
+            (u) => u.email === email && u.password === hashedPassword
         );
 
         if (user) {
+            // Increment login count
+            user.loginCount = (user.loginCount || 0) + 1;
+
+            // Update user in local storage users array
+            const updatedUsers = users.map((u) =>
+                u.email === user.email ? user : u
+            );
+            localStorage.setItem("users", JSON.stringify(updatedUsers));
+
             setCurrentUser(user);
             localStorage.setItem("currentUser", JSON.stringify(user));
-            return { success: true };
+
+            return { success: true, loginCount: user.loginCount };
         }
         return { success: false, message: "Invalid credentials" };
     };
 
-    const register = (name, email, password) => {
+    const register = async (name, email, password) => {
         const users = JSON.parse(localStorage.getItem("users") || "[]");
         if (users.find((u) => u.email === email)) {
             return { success: false, message: "User already exists" };
         }
 
-        const newUser = { name, email, password, id: Date.now() };
+        const formattedName = toTitleCase(name);
+        const hashedPassword = await hashPassword(password);
+
+        const newUser = {
+            name: formattedName,
+            email,
+            password: hashedPassword,
+            loginCount: 0,
+            id: Date.now(),
+        };
         users.push(newUser);
         localStorage.setItem("users", JSON.stringify(users));
 
-        // No auto-login
-        // setCurrentUser(newUser);
-        // localStorage.setItem("currentUser", JSON.stringify(newUser));
         return { success: true };
     };
 
@@ -53,10 +91,20 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("currentUser");
     };
 
-    const updateUser = (data) => {
+    const updateUser = async (data) => {
         if (!currentUser) return;
 
-        const updatedUser = { ...currentUser, ...data };
+        let updatedData = { ...data };
+
+        // Apply formatting/hashing if fields exist
+        if (updatedData.name) {
+            updatedData.name = toTitleCase(updatedData.name);
+        }
+        if (updatedData.password) {
+            updatedData.password = await hashPassword(updatedData.password);
+        }
+
+        const updatedUser = { ...currentUser, ...updatedData };
         setCurrentUser(updatedUser);
         localStorage.setItem("currentUser", JSON.stringify(updatedUser));
 
@@ -67,91 +115,109 @@ export const AuthProvider = ({ children }) => {
         );
         localStorage.setItem("users", JSON.stringify(updatedUsers));
 
-        // Simulation logic: Process Pending applications after 2 seconds
+        // Simulation logic: Assign decision time for Pending applications
         if (data.applications) {
             const newPendingApps = data.applications.filter(
-                (app) =>
-                    app.status === "Pending" &&
-                    // Only trigger if we aren't already processing (avoid infinite loops)
-                    !app.simulationStarted
+                (app) => app.status === "Pending" && !app.decisionTime
             );
 
             if (newPendingApps.length > 0) {
-                // Mark them as simulation started so we don't repeat this
-                const markedApps = data.applications.map((app) =>
-                    app.status === "Pending"
-                        ? { ...app, simulationStarted: true }
-                        : app
-                );
+                const markedApps = data.applications.map((app) => {
+                    if (app.status === "Pending" && !app.decisionTime) {
+                        // Random delay between 10 seconds and 1 hour
+                        const randomDelay =
+                            Math.floor(Math.random() * (3600000 - 10000 + 1)) +
+                            10000;
+                        return {
+                            ...app,
+                            decisionTime: Date.now() + randomDelay,
+                        };
+                    }
+                    return app;
+                });
 
-                // Update state immediately with simulationStarted flag
-                const userWithFlag = {
+                const userWithTimes = {
                     ...updatedUser,
                     applications: markedApps,
                 };
-                setCurrentUser(userWithFlag);
+                setCurrentUser(userWithTimes);
                 localStorage.setItem(
                     "currentUser",
-                    JSON.stringify(userWithFlag)
+                    JSON.stringify(userWithTimes)
                 );
 
-                // Process each pending app with a random delay between 10s and 1h
-                newPendingApps.forEach((pendingApp) => {
-                    const randomDelay =
-                        Math.floor(Math.random() * (3600000 - 10000 + 1)) +
-                        10000;
-
-                    setTimeout(() => {
-                        const finalStatus =
-                            Math.random() > 0.5 ? "Accepted" : "Rejected";
-
-                        // Get fresh user data from state (to avoid stale closures)
-                        setCurrentUser((prevUser) => {
-                            if (!prevUser) return null;
-                            const currentApps = prevUser.applications || [];
-                            const updatedApps = currentApps.map((a) =>
-                                a.id === pendingApp.id
-                                    ? { ...a, status: finalStatus }
-                                    : a
-                            );
-
-                            const finalUser = {
-                                ...prevUser,
-                                applications: updatedApps,
-                            };
-                            localStorage.setItem(
-                                "currentUser",
-                                JSON.stringify(finalUser)
-                            );
-
-                            // Update in global users list too
-                            const allUsers = JSON.parse(
-                                localStorage.getItem("users") || "[]"
-                            );
-                            const allUsersUpdated = allUsers.map((u) =>
-                                u.email === prevUser.email ? finalUser : u
-                            );
-                            localStorage.setItem(
-                                "users",
-                                JSON.stringify(allUsersUpdated)
-                            );
-
-                            return finalUser;
-                        });
-                    }, randomDelay);
-                });
+                // Update global users
+                const users = JSON.parse(localStorage.getItem("users") || "[]");
+                const allUsersUpdated = users.map((u) =>
+                    u.email === userWithTimes.email ? userWithTimes : u
+                );
+                localStorage.setItem("users", JSON.stringify(allUsersUpdated));
             }
         }
     };
 
-    const deleteAccount = () => {
-        if (!currentUser) return;
+    // Effect: Process Pending Applications based on decisionTime
+    useEffect(() => {
+        if (!currentUser?.applications) return;
+
+        const checkApplications = () => {
+            const now = Date.now();
+            let hasTypos = false;
+
+            const updatedApps = currentUser.applications.map((app) => {
+                if (
+                    app.status === "Pending" &&
+                    app.decisionTime &&
+                    now >= app.decisionTime
+                ) {
+                    hasTypos = true;
+                    return {
+                        ...app,
+                        status: Math.random() > 0.5 ? "Accepted" : "Rejected",
+                        decisionDate: new Date().toLocaleDateString(),
+                    };
+                }
+                return app;
+            });
+
+            if (hasTypos) {
+                const updatedUser = {
+                    ...currentUser,
+                    applications: updatedApps,
+                };
+                setCurrentUser(updatedUser);
+                localStorage.setItem(
+                    "currentUser",
+                    JSON.stringify(updatedUser)
+                );
+
+                const users = JSON.parse(localStorage.getItem("users") || "[]");
+                const allUsersUpdated = users.map((u) =>
+                    u.email === updatedUser.email ? updatedUser : u
+                );
+                localStorage.setItem("users", JSON.stringify(allUsersUpdated));
+            }
+        };
+
+        const intervalId = setInterval(checkApplications, 2000); // Check every 2 seconds
+        return () => clearInterval(intervalId);
+    }, [currentUser]);
+
+    const deleteAccount = async (password) => {
+        if (!currentUser)
+            return { success: false, message: "No user logged in" };
+
+        const hashedPassword = await hashPassword(password);
+        if (hashedPassword !== currentUser.password) {
+            return { success: false, message: "Incorrect password" };
+        }
 
         const users = JSON.parse(localStorage.getItem("users") || "[]");
         const updatedUsers = users.filter((u) => u.email !== currentUser.email);
         localStorage.setItem("users", JSON.stringify(updatedUsers));
 
         logout();
+        return { success: true };
     };
 
     return (

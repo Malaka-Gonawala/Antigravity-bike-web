@@ -3,12 +3,13 @@ import "../styles/globals.css";
 import { bikes, brands, categories } from "../data/bikes";
 import BikeCard from "../components/BikeCard";
 import Button from "../components/Button";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Search } from "lucide-react";
 
 const Catalog = () => {
     const [selectedBrand, setSelectedBrand] = useState("all");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [showFilters, setShowFilters] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Filter Logic
     const filteredBikes = useMemo(() => {
@@ -18,9 +19,29 @@ const Catalog = () => {
             const catMatch =
                 selectedCategory === "all" ||
                 bike.categoryId === selectedCategory;
-            return brandMatch && catMatch;
+
+            // Search logic
+            const searchMatch =
+                searchQuery === "" ||
+                bike.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                brands
+                    .find((b) => b.id === bike.brandId)
+                    ?.name.toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                categories
+                    .find((c) => c.id === bike.categoryId)
+                    ?.name.toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                bike.specs.engine
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                bike.specs.power
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase());
+
+            return brandMatch && catMatch && searchMatch;
         });
-    }, [selectedBrand, selectedCategory]);
+    }, [selectedBrand, selectedCategory, searchQuery]);
 
     return (
         <div className="container" style={{ padding: "40px 20px" }}>
@@ -35,7 +56,7 @@ const Catalog = () => {
                     gap: "20px",
                 }}
             >
-                <div>
+                <div style={{ flex: 1 }}>
                     <h1
                         style={{
                             fontSize: "3rem",
@@ -53,6 +74,61 @@ const Catalog = () => {
                     >
                         Showing {filteredBikes.length} results
                     </p>
+
+                    {/* Search Bar */}
+                    <div
+                        style={{
+                            marginTop: "20px",
+                            maxWidth: "400px",
+                            position: "relative",
+                        }}
+                    >
+                        <Search
+                            size={18}
+                            style={{
+                                position: "absolute",
+                                left: "12px",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                color: "var(--color-text-secondary)",
+                            }}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search bikes by name, brand, specs..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{
+                                width: "100%",
+                                padding: "12px 40px 12px 40px",
+                                borderRadius: "var(--radius-md)",
+                                border: "1px solid var(--color-border)",
+                                backgroundColor: "var(--color-bg-primary)",
+                                color: "var(--color-text-primary)",
+                                fontSize: "0.95rem",
+                            }}
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery("")}
+                                style={{
+                                    position: "absolute",
+                                    right: "8px",
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    background: "none",
+                                    border: "none",
+                                    color: "var(--color-text-secondary)",
+                                    cursor: "pointer",
+                                    padding: "4px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Mobile Filter Toggle */}

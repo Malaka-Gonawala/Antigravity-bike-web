@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 import { useNavigate, Link } from "react-router-dom";
 import Button from "../components/Button";
 import "../styles/globals.css";
@@ -8,15 +9,21 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { login } = useAuth();
+    const { showToast } = useNotification();
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = login(email, password);
+        const result = await login(email, password);
         if (result.success) {
+            if (result.loginCount === 1) {
+                showToast("Welcome!", "success");
+            } else {
+                showToast("Welcome back!", "success");
+            }
             navigate("/");
         } else {
-            alert(result.message);
+            showToast(result.message, "error");
         }
     };
 

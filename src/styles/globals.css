@@ -33,6 +33,21 @@
     --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+[data-theme="light"] {
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f4f4f5;
+    --color-bg-elevated: #ffffff;
+
+    --color-text-primary: #18181b;
+    --color-text-secondary: #71717a;
+    --color-text-muted: #a1a1aa;
+
+    --color-border: #e4e4e7;
+    --color-border-hover: #d4d4d8;
+
+    --color-accent-glow: rgba(239, 68, 68, 0.2);
+}
+
 * {
     margin: 0;
     padding: 0;

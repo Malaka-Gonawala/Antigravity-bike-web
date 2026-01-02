@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { bikes, brands, categories } from "../data/bikes";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 import Button from "../components/Button";
 import "../styles/globals.css";
 
@@ -9,6 +10,7 @@ const BookTestDrive = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { currentUser, updateUser } = useAuth();
+    const { showToast } = useNotification();
 
     // Auto-select bike if coming from details page
     const preSelectedBikeId = location.state?.bikeId || "";
@@ -48,7 +50,7 @@ const BookTestDrive = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!formData.bikeId) {
-            alert("Please select a bike to test drive.");
+            showToast("Please select a bike to test drive.", "error");
             return;
         }
         // Save booking to user profile
@@ -63,13 +65,7 @@ const BookTestDrive = () => {
         updateUser({ bookings: [...currentBookings, newBooking] });
 
         console.log("Booking submitted:", formData);
-        alert(
-            `Booking Confirmed! We will contact you at ${
-                currentUser?.email
-            } to confirm your test drive for the ${
-                bikes.find((b) => b.id === formData.bikeId)?.name
-            } on ${formData.date} at ${formData.time}.`
-        );
+        showToast("Booking confirmed! Check your profile.", "success");
         navigate("/profile"); // Redirect to profile to see the booking
     };
 

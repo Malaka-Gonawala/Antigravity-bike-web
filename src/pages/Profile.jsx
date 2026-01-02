@@ -1,26 +1,45 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
+import { useNotification } from "../context/NotificationContext";
 import { bikes } from "../data/bikes";
 import BikeCard from "../components/BikeCard";
 import Button from "../components/Button";
 import { useNavigate, Link } from "react-router-dom";
-import { User, Calendar, Heart, Trash2, LogOut, Briefcase } from "lucide-react";
+import {
+    User,
+    Calendar,
+    Heart,
+    Trash2,
+    LogOut,
+    Briefcase,
+    Settings,
+    LayoutGrid,
+    Sun,
+    Moon,
+} from "lucide-react";
 import "../styles/globals.css";
 
 const Profile = () => {
     const { currentUser, logout, deleteAccount, updateUser } = useAuth();
+    const { theme, toggleTheme } = useTheme();
+    const { showToast } = useNotification();
     const navigate = useNavigate();
 
     // Tab State
-    const [activeTab, setActiveTab] = React.useState("credentials");
+    const [activeTab, setActiveTab] = useState("dashboard");
 
     // Edit State
-    const [name, setName] = React.useState(currentUser?.name || "");
-    const [avatar, setAvatar] = React.useState(currentUser?.avatar || "");
-    const [newPassword, setNewPassword] = React.useState("");
+    const [name, setName] = useState(currentUser?.name || "");
+    const [avatar, setAvatar] = useState(currentUser?.avatar || "");
+    const [newPassword, setNewPassword] = useState("");
 
-    const [successMsg, setSuccessMsg] = React.useState("");
-    const [errorMsg, setErrorMsg] = React.useState("");
+    // Booking Cancellation State
+    const [cancellingBooking, setCancellingBooking] = useState(null);
+
+    // Account Deletion State
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [passwordInput, setPasswordInput] = useState("");
 
     useEffect(() => {
         if (!currentUser) {
@@ -33,59 +52,180 @@ const Profile = () => {
 
     if (!currentUser) return null;
 
-    // Resolve watchlist bikes
+    // Data Resolution
     const watchlistIds = currentUser.watchlist || [];
     const watchlistBikes = bikes.filter((b) => watchlistIds.includes(b.id));
-
-    // Bookings
     const bookings = currentUser.bookings || [];
-
-    // Applications
     const applications = currentUser.applications || [];
 
-    const [isDeleting, setIsDeleting] = React.useState(false);
-    const [passwordInput, setPasswordInput] = React.useState("");
-
-    // Test Drive Cancellation State
-    const [cancellingBooking, setCancellingBooking] = React.useState(null);
-
-    const handleDeleteAccount = () => {
-        setIsDeleting(true);
-    };
-
-    const confirmDelete = () => {
-        if (passwordInput === currentUser.password) {
-            deleteAccount();
-            navigate("/");
-        } else {
-            setErrorMsg("Incorrect password. Account deletion cancelled.");
-            setTimeout(() => setErrorMsg(""), 3000);
-            setIsDeleting(false);
-            setPasswordInput("");
-        }
-    };
-
-    const handleUpdateProfile = (e) => {
+    // Handlers
+    const handleUpdateProfile = async (e) => {
         e.preventDefault();
-        setErrorMsg("");
         const updates = {};
         if (name && name !== currentUser.name) updates.name = name;
         if (avatar !== currentUser.avatar) updates.avatar = avatar;
         if (newPassword) {
             if (newPassword.length < 8 || newPassword.length > 16) {
-                setErrorMsg("Password must be 8-16 characters");
+                showToast("Password must be 8-16 characters", "error");
                 return;
             }
             updates.password = newPassword;
         }
 
         if (Object.keys(updates).length > 0) {
-            updateUser(updates);
-            setSuccessMsg("Profile updated successfully!");
+            await updateUser(updates);
+            showToast("Profile updated successfully!", "success");
             setNewPassword("");
-            setTimeout(() => setSuccessMsg(""), 3000);
         }
     };
+
+    const handleDeleteAccount = () => setIsDeleting(true);
+
+    const confirmDelete = async () => {
+        const result = await deleteAccount(passwordInput);
+        if (result.success) {
+            showToast("Account deleted successfully.", "info");
+            navigate("/");
+        } else {
+            showToast(result.message || "Incorrect password.", "error");
+            setIsDeleting(false);
+            setPasswordInput("");
+        }
+    };
+
+    const renderApplicationCard = (app, idx) => (
+        <div key={idx} className="application-card">
+            <div
+                style={{
+                    fontWeight: "bold",
+                    fontSize: "1.2rem",
+                    marginBottom: "5px",
+                    color: "var(--color-accent)",
+                }}
+            >
+                {app.jobTitle}
+            </div>
+            <div
+                style={{
+                    color: "var(--color-text-secondary)",
+                    fontSize: "0.9rem",
+                    marginBottom: "12px",
+                }}
+            >
+                Applied on {app.date}
+            </div>
+            <div
+                style={{
+                    display: "inline-block",
+                    alignSelf: "flex-start",
+                    padding: "4px 10px",
+                    backgroundColor:
+                        app.status === "Accepted"
+                            ? "rgba(34, 197, 94, 0.1)"
+                            : app.status === "Rejected"
+                            ? "rgba(239, 68, 68, 0.1)"
+                            : "rgba(59, 130, 246, 0.1)",
+                    color:
+                        app.status === "Accepted"
+                            ? "#22c55e"
+                            : app.status === "Rejected"
+                            ? "#ef4444"
+                            : "#3b82f6",
+                    borderRadius: "var(--radius-sm)",
+                    fontSize: "0.75rem",
+                    fontWeight: "bold",
+                    letterSpacing: "0.05em",
+                }}
+            >
+                {app.status.toUpperCase()}
+            </div>
+
+            <div className="detail-section">
+                <div className="detail-item">
+                    <div className="detail-label">Contact</div>
+                    <div className="detail-value">
+                        {app.email} • {app.phone}
+                    </div>
+                </div>
+                {(app.linkedin || app.portfolio) && (
+                    <div className="detail-item">
+                        <div className="detail-label">Links</div>
+                        <div
+                            className="detail-value"
+                            style={{ display: "flex", gap: "10px" }}
+                        >
+                            {app.linkedin && (
+                                <a
+                                    href={app.linkedin}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ color: "var(--color-accent)" }}
+                                >
+                                    LinkedIn
+                                </a>
+                            )}
+                            {app.portfolio && (
+                                <a
+                                    href={app.portfolio}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ color: "var(--color-accent)" }}
+                                >
+                                    Portfolio
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                )}
+                <div className="detail-item">
+                    <div className="detail-label">Cover Letter</div>
+                    <div
+                        className="detail-value"
+                        style={{ fontSize: "0.85rem", fontStyle: "italic" }}
+                    >
+                        "{app.coverLetter}"
+                    </div>
+                </div>
+                <div className="detail-item">
+                    <div className="detail-label">Status</div>
+                    <div
+                        className="detail-value"
+                        style={{ color: "var(--color-text-secondary)" }}
+                    >
+                        {app.status === "Pending" && "Under review by HR team."}
+                        {app.status === "Accepted" && (
+                            <span style={{ color: "#22c55e" }}>
+                                Congratulations! You have been accepted. Check
+                                your email for onboarding details. <br />
+                                <span
+                                    style={{
+                                        fontSize: "0.8em",
+                                        color: "var(--color-text-secondary)",
+                                    }}
+                                >
+                                    (Decision on {app.decisionDate})
+                                </span>
+                            </span>
+                        )}
+                        {app.status === "Rejected" && (
+                            <span style={{ color: "#ef4444" }}>
+                                Thank you for your interest. We have decided to
+                                move forward with other candidates. <br />
+                                <span
+                                    style={{
+                                        fontSize: "0.8em",
+                                        color: "var(--color-text-secondary)",
+                                    }}
+                                >
+                                    (Decision on {app.decisionDate})
+                                </span>
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
         <div className="container" style={{ padding: "60px 20px" }}>
@@ -103,12 +243,8 @@ const Profile = () => {
                     display: flex;
                     flex-direction: column;
                 }
-                .application-card {
-                    max-height: 140px;
-                }
-                .booking-card {
-                    max-height: 120px;
-                }
+                .application-card { max-height: 140px; }
+                .booking-card { max-height: 120px; }
                 .application-card:hover, .booking-card:hover {
                     max-height: 1000px;
                     transform: translateY(-5px);
@@ -138,16 +274,7 @@ const Profile = () => {
                     margin-bottom: 4px;
                     font-weight: bold;
                 }
-                .detail-value { font-size: 0.95rem; color: #fff; }
-                .detail-link {
-                    color: var(--color-accent);
-                    text-decoration: none;
-                    transition: opacity 0.2s;
-                }
-                .detail-link:hover {
-                    opacity: 0.8;
-                    text-decoration: underline;
-                }
+                .detail-value { font-size: 0.95rem; color: var(--color-text-primary); }
                 .bike-preview-img {
                     width: 100%;
                     height: 180px;
@@ -159,18 +286,19 @@ const Profile = () => {
                 }
                 `}
             </style>
+
             <div
                 style={{
                     backgroundColor: "var(--color-bg-elevated)",
                     borderRadius: "var(--radius-lg)",
                     border: "1px solid var(--color-border)",
                     overflow: "hidden",
-                    minHeight: "600px",
+                    minHeight: "800px",
                     display: "flex",
                     flexDirection: "column",
                 }}
             >
-                {/* Header (UserInfo) */}
+                {/* Header */}
                 <div
                     style={{
                         padding: "40px",
@@ -180,7 +308,7 @@ const Profile = () => {
                         justifyContent: "space-between",
                         flexWrap: "wrap",
                         gap: "20px",
-                        backgroundColor: "rgba(0,0,0,0.2)",
+                        backgroundColor: "rgba(0,0,0,0.05)",
                     }}
                 >
                     <div
@@ -242,7 +370,7 @@ const Profile = () => {
                     </Button>
                 </div>
 
-                {/* Tabs Navigation */}
+                {/* Navigation */}
                 <div
                     style={{
                         display: "flex",
@@ -250,11 +378,14 @@ const Profile = () => {
                         overflowX: "auto",
                         gap: "10px",
                         scrollbarWidth: "none",
-                        msOverflowStyle: "none",
                     }}
                 >
                     {[
-                        { id: "credentials", icon: User, label: "Credentials" },
+                        {
+                            id: "dashboard",
+                            icon: LayoutGrid,
+                            label: "Dashboard",
+                        },
                         {
                             id: "test-drives",
                             icon: Calendar,
@@ -266,6 +397,7 @@ const Profile = () => {
                             icon: Briefcase,
                             label: "Applications",
                         },
+                        { id: "settings", icon: Settings, label: "Settings" },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -275,7 +407,7 @@ const Profile = () => {
                                 padding: "20px",
                                 backgroundColor:
                                     activeTab === tab.id
-                                        ? "var(--color-bg-elevated)"
+                                        ? "var(--color-bg-primary)"
                                         : "transparent",
                                 color:
                                     activeTab === tab.id
@@ -301,10 +433,248 @@ const Profile = () => {
                     ))}
                 </div>
 
-                {/* Tab Content */}
-                <div style={{ padding: "40px", flex: 1 }}>
-                    {/* Credentials Tab */}
-                    {activeTab === "credentials" && (
+                {/* Content Area */}
+                <div
+                    style={{
+                        padding: "40px",
+                        flex: 1,
+                        backgroundColor: "var(--color-bg-secondary)",
+                    }}
+                >
+                    {/* DASHBOARD TAB */}
+                    {activeTab === "dashboard" && (
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "60px",
+                            }}
+                        >
+                            {/* Dashboard: Test Drives */}
+                            <section>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        marginBottom: "20px",
+                                    }}
+                                >
+                                    <h2 style={{ fontSize: "1.5rem" }}>
+                                        Recent Test Drives
+                                    </h2>
+                                    {bookings.length > 3 && (
+                                        <button
+                                            onClick={() =>
+                                                setActiveTab("test-drives")
+                                            }
+                                            style={{
+                                                color: "var(--color-accent)",
+                                                fontSize: "0.9rem",
+                                                fontWeight: "bold",
+                                            }}
+                                        >
+                                            View All
+                                        </button>
+                                    )}
+                                </div>
+                                {bookings.length > 0 ? (
+                                    <div
+                                        style={{
+                                            display: "grid",
+                                            gap: "20px",
+                                            gridTemplateColumns:
+                                                "repeat(auto-fill, minmax(280px, 1fr))",
+                                        }}
+                                    >
+                                        {bookings
+                                            .slice(0, 3)
+                                            .map((booking, idx) => {
+                                                const bike = bikes.find(
+                                                    (b) =>
+                                                        b.id === booking.bikeId
+                                                );
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        className="booking-card"
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                fontWeight:
+                                                                    "bold",
+                                                                fontSize:
+                                                                    "1.2rem",
+                                                                marginBottom:
+                                                                    "5px",
+                                                                color: "var(--color-accent)",
+                                                            }}
+                                                        >
+                                                            {bike
+                                                                ? bike.name
+                                                                : "Unknown Bike"}
+                                                        </div>
+                                                        <div
+                                                            style={{
+                                                                color: "var(--color-text-secondary)",
+                                                                fontSize:
+                                                                    "0.9rem",
+                                                                marginBottom:
+                                                                    "10px",
+                                                            }}
+                                                        >
+                                                            {booking.date} at{" "}
+                                                            {booking.time}
+                                                        </div>
+                                                        <div
+                                                            style={{
+                                                                alignSelf:
+                                                                    "flex-start",
+                                                                padding:
+                                                                    "4px 10px",
+                                                                backgroundColor:
+                                                                    "rgba(34, 197, 94, 0.1)",
+                                                                color: "#22c55e",
+                                                                borderRadius:
+                                                                    "var(--radius-sm)",
+                                                                fontSize:
+                                                                    "0.75rem",
+                                                                fontWeight:
+                                                                    "bold",
+                                                            }}
+                                                        >
+                                                            CONFIRMED
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                ) : (
+                                    <p
+                                        style={{
+                                            color: "var(--color-text-secondary)",
+                                        }}
+                                    >
+                                        No upcoming test drives.
+                                    </p>
+                                )}
+                            </section>
+
+                            {/* Dashboard: Watchlist */}
+                            <section>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        marginBottom: "20px",
+                                    }}
+                                >
+                                    <h2 style={{ fontSize: "1.5rem" }}>
+                                        Watchlist Preview
+                                    </h2>
+                                    {watchlistBikes.length > 4 && (
+                                        <button
+                                            onClick={() =>
+                                                setActiveTab("watchlist")
+                                            }
+                                            style={{
+                                                color: "var(--color-accent)",
+                                                fontSize: "0.9rem",
+                                                fontWeight: "bold",
+                                            }}
+                                        >
+                                            View All
+                                        </button>
+                                    )}
+                                </div>
+                                {watchlistBikes.length > 0 ? (
+                                    <div
+                                        style={{
+                                            display: "grid",
+                                            gridTemplateColumns:
+                                                "repeat(auto-fill, minmax(250px, 1fr))",
+                                            gap: "20px",
+                                        }}
+                                    >
+                                        {watchlistBikes
+                                            .slice(0, 4)
+                                            .map((bike) => (
+                                                <BikeCard
+                                                    key={bike.id}
+                                                    bike={bike}
+                                                />
+                                            ))}
+                                    </div>
+                                ) : (
+                                    <p
+                                        style={{
+                                            color: "var(--color-text-secondary)",
+                                        }}
+                                    >
+                                        Your watchlist is empty.
+                                    </p>
+                                )}
+                            </section>
+
+                            {/* Dashboard: Applications */}
+                            <section>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        marginBottom: "20px",
+                                    }}
+                                >
+                                    <h2 style={{ fontSize: "1.5rem" }}>
+                                        Recent Applications
+                                    </h2>
+                                    {applications.length > 3 && (
+                                        <button
+                                            onClick={() =>
+                                                setActiveTab("applications")
+                                            }
+                                            style={{
+                                                color: "var(--color-accent)",
+                                                fontSize: "0.9rem",
+                                                fontWeight: "bold",
+                                            }}
+                                        >
+                                            View All
+                                        </button>
+                                    )}
+                                </div>
+                                {applications.length > 0 ? (
+                                    <div
+                                        style={{
+                                            display: "grid",
+                                            gap: "20px",
+                                            gridTemplateColumns:
+                                                "repeat(auto-fill, minmax(320px, 1fr))",
+                                        }}
+                                    >
+                                        {applications
+                                            .slice(0, 3)
+                                            .map((app, idx) =>
+                                                renderApplicationCard(app, idx)
+                                            )}
+                                    </div>
+                                ) : (
+                                    <p
+                                        style={{
+                                            color: "var(--color-text-secondary)",
+                                        }}
+                                    >
+                                        No active job applications.
+                                    </p>
+                                )}
+                            </section>
+                        </div>
+                    )}
+
+                    {/* SETTINGS TAB */}
+                    {activeTab === "settings" && (
                         <div style={{ maxWidth: "600px", margin: "0 auto" }}>
                             <h2
                                 style={{
@@ -314,40 +684,62 @@ const Profile = () => {
                                     paddingBottom: "10px",
                                 }}
                             >
-                                Edit Profile
+                                Settings
                             </h2>
 
-                            {successMsg && (
-                                <div
+                            {/* Theme Toggle */}
+                            <div style={{ marginBottom: "40px" }}>
+                                <label
                                     style={{
-                                        padding: "15px",
-                                        backgroundColor:
-                                            "rgba(34, 197, 94, 0.1)",
-                                        color: "#22c55e",
-                                        borderRadius: "var(--radius-md)",
-                                        marginBottom: "20px",
-                                        border: "1px solid rgba(34, 197, 94, 0.2)",
+                                        display: "block",
+                                        marginBottom: "15px",
+                                        fontWeight: "bold",
                                     }}
                                 >
-                                    {successMsg}
-                                </div>
-                            )}
+                                    Appearance
+                                </label>
+                                <Button
+                                    onClick={toggleTheme}
+                                    variant="outline"
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px",
+                                        width: "100%",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "10px",
+                                        }}
+                                    >
+                                        {theme === "dark" ? (
+                                            <Moon size={18} />
+                                        ) : (
+                                            <Sun size={18} />
+                                        )}
+                                        {theme === "dark"
+                                            ? "Dark Mode"
+                                            : "Light Mode"}
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: "0.8rem",
+                                            color: "var(--color-text-secondary)",
+                                        }}
+                                    >
+                                        Click to switch
+                                    </span>
+                                </Button>
+                            </div>
 
-                            {errorMsg && (
-                                <div
-                                    style={{
-                                        padding: "15px",
-                                        backgroundColor:
-                                            "rgba(239, 68, 68, 0.1)",
-                                        color: "#ef4444",
-                                        borderRadius: "var(--radius-md)",
-                                        marginBottom: "20px",
-                                        border: "1px solid rgba(239, 68, 68, 0.2)",
-                                    }}
-                                >
-                                    {errorMsg}
-                                </div>
-                            )}
+                            {/* Edit Profile Form */}
+                            <h3 style={{ marginBottom: "20px" }}>
+                                Profile Details
+                            </h3>
 
                             <form
                                 onSubmit={handleUpdateProfile}
@@ -380,7 +772,7 @@ const Profile = () => {
                                             backgroundColor:
                                                 "var(--color-bg-primary)",
                                             border: "1px solid var(--color-border)",
-                                            color: "#fff",
+                                            color: "var(--color-text-primary)",
                                         }}
                                     />
                                 </div>
@@ -399,7 +791,7 @@ const Profile = () => {
                                         onChange={(e) =>
                                             setAvatar(e.target.value)
                                         }
-                                        placeholder="https://example.com/my-photo.jpg"
+                                        placeholder="https://example.com/photo.jpg"
                                         style={{
                                             width: "100%",
                                             padding: "12px",
@@ -407,7 +799,7 @@ const Profile = () => {
                                             backgroundColor:
                                                 "var(--color-bg-primary)",
                                             border: "1px solid var(--color-border)",
-                                            color: "#fff",
+                                            color: "var(--color-text-primary)",
                                         }}
                                     />
                                 </div>
@@ -418,8 +810,7 @@ const Profile = () => {
                                             marginBottom: "8px",
                                         }}
                                     >
-                                        New Password (leave empty to keep
-                                        current)
+                                        New Password
                                     </label>
                                     <input
                                         type="password"
@@ -427,9 +818,9 @@ const Profile = () => {
                                         onChange={(e) =>
                                             setNewPassword(e.target.value)
                                         }
-                                        placeholder="Min 8 characters"
                                         minLength={8}
                                         maxLength={16}
+                                        placeholder="Min 8 characters"
                                         style={{
                                             width: "100%",
                                             padding: "12px",
@@ -437,7 +828,7 @@ const Profile = () => {
                                             backgroundColor:
                                                 "var(--color-bg-primary)",
                                             border: "1px solid var(--color-border)",
-                                            color: "#fff",
+                                            color: "var(--color-text-primary)",
                                         }}
                                     />
                                 </div>
@@ -446,6 +837,7 @@ const Profile = () => {
                                 </Button>
                             </form>
 
+                            {/* Danger Zone */}
                             <div
                                 style={{
                                     borderTop: "1px solid var(--color-border)",
@@ -467,7 +859,7 @@ const Profile = () => {
                                     }}
                                 >
                                     Once you delete your account, there is no
-                                    going back. Please be certain.
+                                    going back.
                                 </p>
                                 {!isDeleting ? (
                                     <Button
@@ -488,8 +880,7 @@ const Profile = () => {
                                                 color: "var(--color-text-primary)",
                                             }}
                                         >
-                                            Please enter your password to
-                                            confirm deletion:
+                                            Enter password to confirm:
                                         </p>
                                         <div
                                             style={{
@@ -505,7 +896,9 @@ const Profile = () => {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="Enter password"
+                                                minLength={8}
+                                                maxLength={16}
+                                                placeholder="Password"
                                                 style={{
                                                     padding: "10px",
                                                     borderRadius:
@@ -513,7 +906,7 @@ const Profile = () => {
                                                     border: "1px solid var(--color-border)",
                                                     backgroundColor:
                                                         "var(--color-bg-primary)",
-                                                    color: "#fff",
+                                                    color: "var(--color-text-primary)",
                                                     flex: 1,
                                                 }}
                                             />
@@ -542,7 +935,7 @@ const Profile = () => {
                         </div>
                     )}
 
-                    {/* Test Drives Tab */}
+                    {/* TEST DRIVES TAB */}
                     {activeTab === "test-drives" && (
                         <div>
                             <h2 style={{ marginBottom: "30px" }}>
@@ -599,12 +992,10 @@ const Profile = () => {
                                                             "var(--radius-sm)",
                                                         fontSize: "0.75rem",
                                                         fontWeight: "bold",
-                                                        letterSpacing: "0.05em",
                                                     }}
                                                 >
                                                     CONFIRMED
                                                 </div>
-
                                                 <div className="detail-section">
                                                     {bike && (
                                                         <>
@@ -632,14 +1023,6 @@ const Profile = () => {
                                                                     {bike.brandId.toUpperCase()}
                                                                 </div>
                                                             </div>
-                                                            <div className="detail-item">
-                                                                <div className="detail-label">
-                                                                    Category
-                                                                </div>
-                                                                <div className="detail-value">
-                                                                    {bike.categoryId.toUpperCase()}
-                                                                </div>
-                                                            </div>
                                                         </>
                                                     )}
                                                     <div className="detail-item">
@@ -650,35 +1033,24 @@ const Profile = () => {
                                                             #{booking.id}
                                                         </div>
                                                     </div>
-                                                    <div
-                                                        className="detail-item"
+                                                    <button
+                                                        onClick={() =>
+                                                            setCancellingBooking(
+                                                                booking
+                                                            )
+                                                        }
                                                         style={{
+                                                            color: "#ef4444",
+                                                            textDecoration:
+                                                                "underline",
                                                             marginTop: "10px",
-                                                            marginBottom: 0,
+                                                            border: "none",
+                                                            background: "none",
+                                                            cursor: "pointer",
                                                         }}
                                                     >
-                                                        <button
-                                                            onClick={() =>
-                                                                setCancellingBooking(
-                                                                    booking
-                                                                )
-                                                            }
-                                                            style={{
-                                                                background:
-                                                                    "transparent",
-                                                                border: "none",
-                                                                color: "#ef4444",
-                                                                fontSize:
-                                                                    "0.85rem",
-                                                                cursor: "pointer",
-                                                                textDecoration:
-                                                                    "underline",
-                                                                padding: 0,
-                                                            }}
-                                                        >
-                                                            Cancel Booking
-                                                        </button>
-                                                    </div>
+                                                        Cancel Booking
+                                                    </button>
                                                 </div>
                                             </div>
                                         );
@@ -690,17 +1062,10 @@ const Profile = () => {
                                         color: "var(--color-text-secondary)",
                                     }}
                                 >
-                                    No test drives booked yet.{" "}
-                                    <Link
-                                        to="/catalog"
-                                        style={{ color: "var(--color-accent)" }}
-                                    >
-                                        Browse bikes
-                                    </Link>
+                                    No bookings found.
                                 </p>
                             )}
-
-                            {/* Booking Cancellation Confirmation Modal */}
+                            {/* Cancellation Modal */}
                             {cancellingBooking && (
                                 <div
                                     style={{
@@ -743,18 +1108,7 @@ const Profile = () => {
                                                 marginBottom: "30px",
                                             }}
                                         >
-                                            Are you sure you want to cancel your
-                                            test drive for the{" "}
-                                            <strong>
-                                                {
-                                                    bikes.find(
-                                                        (b) =>
-                                                            b.id ===
-                                                            cancellingBooking.bikeId
-                                                    )?.name
-                                                }
-                                            </strong>{" "}
-                                            on {cancellingBooking.date}?
+                                            Are you sure?
                                         </p>
                                         <div
                                             style={{
@@ -799,7 +1153,7 @@ const Profile = () => {
                         </div>
                     )}
 
-                    {/* Watchlist Tab */}
+                    {/* WATCHLIST TAB */}
                     {activeTab === "watchlist" && (
                         <div>
                             <h2 style={{ marginBottom: "30px" }}>
@@ -836,7 +1190,7 @@ const Profile = () => {
                         </div>
                     )}
 
-                    {/* Applications Tab */}
+                    {/* APPLICATIONS TAB */}
                     {activeTab === "applications" && (
                         <div>
                             <h2 style={{ marginBottom: "30px" }}>
@@ -849,226 +1203,11 @@ const Profile = () => {
                                         gap: "20px",
                                         gridTemplateColumns:
                                             "repeat(auto-fill, minmax(320px, 1fr))",
-                                        alignItems: "start",
                                     }}
                                 >
-                                    {applications.map((app, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="application-card"
-                                        >
-                                            <div
-                                                style={{
-                                                    fontWeight: "bold",
-                                                    fontSize: "1.2rem",
-                                                    marginBottom: "5px",
-                                                    color: "var(--color-accent)",
-                                                }}
-                                            >
-                                                {app.jobTitle}
-                                            </div>
-                                            <div
-                                                style={{
-                                                    color: "var(--color-text-secondary)",
-                                                    fontSize: "0.9rem",
-                                                    marginBottom: "12px",
-                                                }}
-                                            >
-                                                Applied on {app.date}
-                                            </div>
-                                            <div
-                                                style={{
-                                                    display: "inline-block",
-                                                    alignSelf: "flex-start",
-                                                    padding: "4px 10px",
-                                                    backgroundColor:
-                                                        app.status ===
-                                                        "Accepted"
-                                                            ? "rgba(34, 197, 94, 0.1)"
-                                                            : app.status ===
-                                                              "Rejected"
-                                                            ? "rgba(239, 68, 68, 0.1)"
-                                                            : "rgba(59, 130, 246, 0.1)",
-                                                    color:
-                                                        app.status ===
-                                                        "Accepted"
-                                                            ? "#22c55e"
-                                                            : app.status ===
-                                                              "Rejected"
-                                                            ? "#ef4444"
-                                                            : "#3b82f6",
-                                                    borderRadius:
-                                                        "var(--radius-sm)",
-                                                    fontSize: "0.75rem",
-                                                    fontWeight: "bold",
-                                                    letterSpacing: "0.05em",
-                                                }}
-                                            >
-                                                {app.status.toUpperCase()}
-                                            </div>
-
-                                            <div className="detail-section">
-                                                {app.status === "Accepted" && (
-                                                    <div
-                                                        style={{
-                                                            padding: "15px",
-                                                            backgroundColor:
-                                                                "rgba(34, 197, 94, 0.05)",
-                                                            borderRadius:
-                                                                "var(--radius-md)",
-                                                            border: "1px solid rgba(34, 197, 94, 0.2)",
-                                                            marginBottom:
-                                                                "20px",
-                                                        }}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                color: "#22c55e",
-                                                                fontWeight:
-                                                                    "bold",
-                                                                fontSize:
-                                                                    "0.95rem",
-                                                                marginBottom:
-                                                                    "5px",
-                                                            }}
-                                                        >
-                                                            🎉 Congratulations!
-                                                        </div>
-                                                        <div
-                                                            style={{
-                                                                color: "var(--color-text-secondary)",
-                                                                fontSize:
-                                                                    "0.85rem",
-                                                                lineHeight:
-                                                                    "1.4",
-                                                            }}
-                                                        >
-                                                            Your application has
-                                                            been accepted. Our
-                                                            team will contact
-                                                            you via email within
-                                                            24 hours to schedule
-                                                            your first
-                                                            interview.
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {app.status === "Rejected" && (
-                                                    <div
-                                                        style={{
-                                                            padding: "15px",
-                                                            backgroundColor:
-                                                                "rgba(239, 68, 68, 0.05)",
-                                                            borderRadius:
-                                                                "var(--radius-md)",
-                                                            border: "1px solid rgba(239, 68, 68, 0.2)",
-                                                            marginBottom:
-                                                                "20px",
-                                                        }}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                color: "#ef4444",
-                                                                fontWeight:
-                                                                    "bold",
-                                                                fontSize:
-                                                                    "0.95rem",
-                                                                marginBottom:
-                                                                    "5px",
-                                                            }}
-                                                        >
-                                                            Update on Your
-                                                            Application
-                                                        </div>
-                                                        <div
-                                                            style={{
-                                                                color: "var(--color-text-secondary)",
-                                                                fontSize:
-                                                                    "0.85rem",
-                                                                lineHeight:
-                                                                    "1.4",
-                                                            }}
-                                                        >
-                                                            Thank you for your
-                                                            interest in
-                                                            Antigravity. After
-                                                            careful review, we
-                                                            have decided to move
-                                                            forward with other
-                                                            candidates at this
-                                                            time. We wish you
-                                                            the best in your
-                                                            search!
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                <div className="detail-item">
-                                                    <div className="detail-label">
-                                                        Phone Number
-                                                    </div>
-                                                    <div className="detail-value">
-                                                        {app.phone}
-                                                    </div>
-                                                </div>
-                                                <div className="detail-item">
-                                                    <div className="detail-label">
-                                                        LinkedIn Profile
-                                                    </div>
-                                                    <div className="detail-value">
-                                                        <a
-                                                            href={app.linkedin}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="detail-link"
-                                                        >
-                                                            View Profile
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                                {app.portfolio && (
-                                                    <div className="detail-item">
-                                                        <div className="detail-label">
-                                                            Portfolio
-                                                        </div>
-                                                        <div className="detail-value">
-                                                            <a
-                                                                href={
-                                                                    app.portfolio
-                                                                }
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="detail-link"
-                                                            >
-                                                                View Work
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                <div
-                                                    className="detail-item"
-                                                    style={{ marginBottom: 0 }}
-                                                >
-                                                    <div className="detail-label">
-                                                        Cover Letter / Message
-                                                    </div>
-                                                    <div
-                                                        className="detail-value"
-                                                        style={{
-                                                            lineHeight: "1.6",
-                                                            fontSize: "0.9rem",
-                                                            color: "var(--color-text-secondary)",
-                                                            whiteSpace:
-                                                                "pre-wrap",
-                                                        }}
-                                                    >
-                                                        {app.coverLetter}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                    {applications.map((app, idx) =>
+                                        renderApplicationCard(app, idx)
+                                    )}
                                 </div>
                             ) : (
                                 <p
@@ -1076,7 +1215,7 @@ const Profile = () => {
                                         color: "var(--color-text-secondary)",
                                     }}
                                 >
-                                    No applications submitted yet.{" "}
+                                    No applications found.{" "}
                                     <Link
                                         to="/careers"
                                         style={{ color: "var(--color-accent)" }}

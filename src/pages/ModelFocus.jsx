@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import "../styles/globals.css";
 import { bikes } from "../data/bikes";
 import Button from "../components/Button";
+import FinancingCalculator from "../components/FinancingCalculator";
+import BikeCard from "../components/BikeCard";
 import { ArrowLeft, CheckCircle, Calendar } from "lucide-react";
 
 const ModelFocus = () => {
@@ -26,6 +28,16 @@ const ModelFocus = () => {
             </div>
         );
     }
+
+    // Find similar bikes: same category, similar price range, different model
+    const similarBikes = bikes
+        .filter(
+            (b) =>
+                b.id !== bike.id && // Not the current bike
+                b.categoryId === bike.categoryId && // Same category
+                Math.abs(b.price - bike.price) / bike.price < 0.3 // Within 30% price range
+        )
+        .slice(0, 3); // Limit to 3
 
     return (
         <div style={{ paddingBottom: "80px" }}>
@@ -213,7 +225,37 @@ const ModelFocus = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Financing Calculator */}
+                <FinancingCalculator price={bike.price} />
             </div>
+
+            {/* Similar Bikes Section */}
+            {similarBikes.length > 0 && (
+                <div className="container" style={{ paddingTop: "60px" }}>
+                    <h2
+                        style={{
+                            fontSize: "2rem",
+                            marginBottom: "40px",
+                            textAlign: "center",
+                        }}
+                    >
+                        You Might Also Like
+                    </h2>
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                                "repeat(auto-fit, minmax(280px, 1fr))",
+                            gap: "30px",
+                        }}
+                    >
+                        {similarBikes.map((similarBike) => (
+                            <BikeCard key={similarBike.id} bike={similarBike} />
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

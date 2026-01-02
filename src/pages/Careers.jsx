@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 import "../styles/globals.css";
 import Button from "../components/Button";
 import { CheckCircle, AlertCircle, X } from "lucide-react";
@@ -8,6 +9,7 @@ import { CheckCircle, AlertCircle, X } from "lucide-react";
 const Careers = () => {
     const navigate = useNavigate();
     const { currentUser, updateUser } = useAuth();
+    const { showToast } = useNotification();
     const [revokingJob, setRevokingJob] = useState(null);
     const [revokeReason, setRevokeReason] = useState("");
 
@@ -51,7 +53,10 @@ const Careers = () => {
         updateUser({ applications: updatedApps });
         setRevokingJob(null);
         setRevokeReason("");
-        alert(`Application for ${revokingJob.title} has been revoked.`);
+        showToast(
+            `Application for ${revokingJob.title} has been revoked.`,
+            "info"
+        );
     };
 
     return (
