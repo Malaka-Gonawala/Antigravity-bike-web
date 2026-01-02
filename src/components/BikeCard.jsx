@@ -86,7 +86,11 @@ const BikeCard = ({ bike }) => {
                 }}
             >
                 <img
-                    src={bike.image}
+                    src={
+                        bike.image.startsWith("/")
+                            ? import.meta.env.BASE_URL + bike.image.slice(1)
+                            : bike.image
+                    }
                     alt={bike.name}
                     style={{
                         width: "100%",
